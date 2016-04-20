@@ -9,6 +9,7 @@ class IpRouter {
     
 private:
     std::vector<Datagram> datagrams;
+
     std::string packetsFilename;
     std::string outFilename;
     std::string forwardingTableFilename;
@@ -24,10 +25,16 @@ public:
     IpRouter(std::string packetsFile);
 
     /**
-     * Reads packets from the packets file and returns a Datagram 
+     * Reads the next packet from the packets file and returns a Datagram 
      * struct with the data fields assigned.
      */
-    Datagram readPacket();
+    Datagram* readPacket();
+
+    /**
+     * Gets all packets, checks for if they are valid, and stores the
+     * valid ones in the datagrams vector.
+     */
+    void getPackets();
 };
 
 

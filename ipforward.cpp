@@ -5,7 +5,7 @@ int main() {
 
     IpRouter reader("ip_packets");
 
-    reader.readPacket();
+    reader.getPackets();
 
     return 0;
 }
