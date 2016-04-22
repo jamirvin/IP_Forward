@@ -3,6 +3,15 @@
 #include <iostream>
 #include <fstream>
 
+Datagram::Datagram() {
+    num = 0;
+    error = NULL;
+}
+
+Datagram::~Datagram() {
+    delete[] data;
+}
+
 uint16_t Datagram::computeChecksum() {
     uint32_t tot = 0;
 
@@ -12,7 +21,6 @@ uint16_t Datagram::computeChecksum() {
             tot -= 0xffff;
     }
 
-    std::cout << std::hex << htons(~tot) << std::dec << std::endl;
     return htons(~tot);
 }
 
@@ -20,12 +28,15 @@ bool Datagram::compareChecksum() {
     return checksum == computeChecksum();
 }
 
-void Datagram::readHeader(std::ifstream &input) {
+void Datagram::read(std::ifstream &input) {
     for(int i = 0; i < NUM_16_BIT_HEADER_FIELDS; i++) {
         input.read(reinterpret_cast<char*>(&header[i]), 2);
     }
 
     parseHeader();
+
+    data = new char[totLength - 20];
+    input.read(data, totLength - 20);
 }
 
 void Datagram::parseHeader() {
@@ -34,5 +45,19 @@ void Datagram::parseHeader() {
     checksum = header[5];
     header[5] = 0;
     sourceAddress = ntohl( (uint32_t)header[6] + ((uint32_t)header[7] << 16) );
-    destAddress = ntohl( (uint32_t)header[8] + ((uint32_t)header[8] << 16) );
+    destAddress = ntohl( (uint32_t)header[8] + ((uint32_t)header[9] << 16) );
+}
+
+bool Datagram::decrementTTL() {
+    if (ttl <= 1) 
+        return false;
+
+    uint16_t newTTL = --ttl;
+    header[4] = (header[4] & 0xff00) + newTTL;
+
+    return true;
+}
+
+void Datagram::setError(const char* msg) {
+    error = msg;
 }

@@ -1,12 +1,17 @@
+CXX=g++
+CXXFLAGS=-Wall -std=c++11
 
-ipforward: iprouter.o ipforward.cpp
-	c++ -Wall -std=c++11 -o ipforward ipforward.cpp iprouter.o
+SRC=iprouter.cpp datagram.cpp ipforward.cpp table.cpp
+OBJS=$(subst .cpp,.o,$(SRC))
 
-iprouter.o: iprouter.cpp
-	g++ -c -Wall -std=c++11 -o iprouter.o iprouter.cpp
+ipforward: $(OBJS)
+	$(CXX) $(CXXFLAGS) -o ipforward $(OBJS)
 
-debug: iprouter.cpp ipforward.cpp
-	g++ -g -Wall -std=c++11 -o debug *.cpp
+%.o: %.cpp %.h
+	$(CXX) -c $(CXXFLAGS) $< -o $@
+
+debug: $(SRC)
+	$(CXX) -g $(CXXFLAGS) -o debug $(SRC)
 
 clean: 
-	rm -rf *.o ipforward debug
+	rm -rf $(OBJS) ipforward debug

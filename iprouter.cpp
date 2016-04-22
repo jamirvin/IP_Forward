@@ -1,4 +1,5 @@
 #include "iprouter.h"
+#include "table.h"
 #include <string>
 #include <fstream>
 #include <iterator>
@@ -6,11 +7,23 @@
 #include <iostream>
 #include <iomanip>
 #include <arpa/inet.h>
+#include <stdio.h>
 
-IpRouter::IpRouter(std::string packetsFile) {
-    packetsFilename = packetsFile;
+IpRouter::IpRouter(const char* routingFile,
+                   const char* packetsFile,
+                   const char* outFile) : 
+                   packetsFile(packetsFile), 
+                   outFile(outFile), 
+                   routingFile(routingFile)
+{
+            
+    packetsFS.open(packetsFile, std::ios::binary);
+}
 
-    packetsFS.open(packetsFile.c_str(), std::ios::binary);
+IpRouter::~IpRouter() {
+    for (auto it : datagrams) {
+        delete it;
+    }
 }
 
 Datagram* IpRouter::readPacket() {
@@ -20,50 +33,54 @@ Datagram* IpRouter::readPacket() {
         return NULL;
     }
 
-    static Datagram packet;
+    Datagram* packet = new Datagram;
 
-    uint16_t twoBytes = 0;
-    uint32_t fourBytes = 0;
+    packet->read(packetsFS);
 
-    // Read in the datagram length, convert it to host order and store it in the struct.
-    packetsFS.seekg(2, std::ios::cur);
-    packetsFS.read(reinterpret_cast<char*>(&twoBytes), 2);
-    packet.totLength = ntohs(twoBytes);
+    return packet;
+}
 
-    // Read in the ttl
-    packetsFS.seekg(4, std::ios::cur);
-    packetsFS.read(reinterpret_cast<char*>(&packet.ttl), 1);
-
-    // Read in the checksum
-    packetsFS.seekg(1, std::ios::cur);
-    packetsFS.read(reinterpret_cast<char*>(&twoBytes), 2);
-    packet.checksum = ntohs(twoBytes);
-
-    // Read the source address
-    packetsFS.read(reinterpret_cast<char*>(&fourBytes), 4);
-    packet.sourceAddress = ntohl(fourBytes);
-
-    // Read the destination address
-    packetsFS.read(reinterpret_cast<char*>(&fourBytes), 4);
-    packet.destAddress = ntohl(fourBytes);
-
-    // Move file pointer to end of packet
-    packetsFS.seekg(packet.totLength - 20, std::ios::cur);
-
-    std::cout << packet.totLength << std::endl;
-    std::cout << unsigned(packet.ttl) << std::endl;
-    std::cout << std::hex << packet.checksum << std::endl;
-    std::cout << std::dec << packet.sourceAddress  << std::endl;
-    std::cout << packet.destAddress  << std::endl;
-    
-    return &packet;
+void IpRouter::outputError(Datagram packet, std::string error) {
+    std::cout << "Packet Dropped: " << error << std::endl;
 }
 
 void IpRouter::getPackets() {
     Datagram* packet;
+    int counter = 1;
     while((packet = readPacket())) {
-        ;
-    }
 
+        if( !packet->compareChecksum() ) {
+            packet->setError("Checksum is incorrect");
+        } else if( !packet->decrementTTL()) {
+            packet->setError("TTL becomes 0");
+        } 
+
+        packet->num = counter;
+
+        datagrams.push_back(packet);
+        ++counter;
+    }
+}
+
+void IpRouter::getResults() {
+    
+    RoutingTable table(routingFile);
+    table.read();
+
+    printf("Packet#\tSource\t\tDestination\tOutcome\n");
+    for( auto it : datagrams) {
+        std::string outcome;
+
+        if (it->error) {
+            outcome = "Packet Dropped: ";
+            outcome += it->error;
+        } else {
+            outcome = "Packet forwarded to ";
+            outcome += RoutingTable::addr_htos(table.getNextHop(it->destAddress));
+        }
+
+        printf("%d\t%s\t%s\t%s\n", it->num, RoutingTable::addr_htos(it->sourceAddress),
+                RoutingTable::addr_htos(it->destAddress), outcome.c_str());
+    }
 }
 
