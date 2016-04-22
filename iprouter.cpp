@@ -79,8 +79,10 @@ void IpRouter::getResults() {
             outcome += RoutingTable::addr_htos(table.getNextHop(it->destAddress));
         }
 
-        printf("%d\t%s\t%s\t%s\n", it->num, RoutingTable::addr_htos(it->sourceAddress),
-                RoutingTable::addr_htos(it->destAddress), outcome.c_str());
+        std::string source = RoutingTable::addr_htos(htonl(it->sourceAddress));
+        std::string  dest = RoutingTable::addr_htos(it->destAddress);
+
+        printf("%d\t%s\t%s\t%s\n", it->num, source.c_str(), dest.c_str(), outcome.c_str());
     }
 }
 
