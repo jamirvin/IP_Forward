@@ -50,6 +50,11 @@ public:
      * Output the results of the ip routing to the terminal.
      */
     void getResults();
+
+    /**
+     * Writes packets to file
+     */
+    void writePackets();
 };
 
 

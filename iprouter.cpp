@@ -86,3 +86,14 @@ void IpRouter::getResults() {
     }
 }
 
+void IpRouter::writePackets() {
+    std::ofstream out(outFile, std::ofstream::binary);
+
+    for(auto it : datagrams) {
+        if (it->error == NULL)
+            it->write(&out);
+    }
+
+    out.close();
+}
+

@@ -61,3 +61,13 @@ bool Datagram::decrementTTL() {
 void Datagram::setError(const char* msg) {
     error = msg;
 }
+
+void Datagram::write(std::ostream* output) {
+    header[5] = computeChecksum();
+
+    for( int i = 0; i < 10; ++i) {
+        output->write( (char*)header + i, sizeof(uint16_t));
+    }
+
+    output->write( data, totLength - 20);
+}

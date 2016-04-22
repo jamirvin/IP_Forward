@@ -58,6 +58,11 @@ public:
     bool decrementTTL();
 
     void setError(const char* msg);
+
+    /**
+     * Writes single packet to output stream
+     */
+    void write(std::ostream* output);
     
 };
 
