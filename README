@@ -1,0 +1,16 @@
+Build instructions. 
+
+Use the included makefile with the default target.
+
+> make
+
+Usage: ./ipforward <Forwarding table> <ip packets> <output file>
+
+
+
+Everything seems to work pretty well according to the requirements.
+Once possible shortcoming is that because I read in and store the
+entire packets file at a time it could fail for exceptionally large
+packet files. If I needed to handle those or this was reading from 
+a socket I would reorganize to have it handle each packet as it is 
+read.

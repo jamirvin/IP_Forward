@@ -8,6 +8,7 @@
 class IpRouter {
     
 private:
+    // Properties
     std::vector<Datagram*> datagrams;
 
     const char* packetsFile;
@@ -18,6 +19,8 @@ private:
 
 
 public: 
+    // Methods
+
     /**
      * Takes the names of the files used and stores them in the 
      * object opening filestreams when appropriate.

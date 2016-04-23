@@ -8,10 +8,12 @@
 class Datagram {
 
 private:
+    // Properties
     uint16_t totLength;
     uint8_t ttl;
     uint16_t checksum;
     
+    // Arrays to keep header data. Stored in Network byte order
     uint16_t header[NUM_16_BIT_HEADER_FIELDS];
     char* data;
 
@@ -22,6 +24,11 @@ public:
     const char* error;
     int num;
 
+    // Methods
+    
+    /**
+     * Constructor. Set initial field values and create object.
+     */
     Datagram();
 
     /**
@@ -57,6 +64,9 @@ public:
      */
     bool decrementTTL();
 
+    /**
+     * Set error message
+     */
     void setError(const char* msg);
 
     /**

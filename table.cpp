@@ -8,6 +8,8 @@
 RoutingTable::RoutingTable(const char* filename) : tableFile(filename) {}
 
 uint32_t RoutingTable::addr_stoh(std::string ipString) {
+    // Use sockaddr_in struct and inet funcitons to convert string
+    // representation of IP to int
     struct sockaddr_in sa;
     inet_pton(AF_INET, ipString.c_str(), &(sa.sin_addr));
 
@@ -18,6 +20,8 @@ const char* RoutingTable::addr_htos(uint32_t ipInt) {
     char str[INET_ADDRSTRLEN];
     struct sockaddr_in sa;
 
+    // Use sockaddr_in struct and inet functions to convert host order
+    // int to string
     sa.sin_addr.s_addr = htonl(ipInt);
     inet_ntop(AF_INET, &(sa.sin_addr), str, INET_ADDRSTRLEN);
 
@@ -51,6 +55,7 @@ void RoutingTable::read() {
 
 uint32_t RoutingTable::getNextHop(uint32_t destination) {
     for( auto it : routes) {
+        // For each route, see if the destination address matches the netid
         if( (it.netmask & destination) == it.netid ) {
             return it.nextHop;
         }
@@ -58,7 +63,6 @@ uint32_t RoutingTable::getNextHop(uint32_t destination) {
 
     std::cout << "Error: Routing table does not have a case for this destination - " 
         << destination << std::endl;
-    exit(1);
 
     return -1;
 }
