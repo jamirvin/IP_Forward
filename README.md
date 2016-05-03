@@ -1,4 +1,4 @@
-Descriptoin:
+## Description:
 
 Simple project to learn about IP Routing. Read packets from a file
 in Network Byte Order and use a IP Forwarding Table also provided
@@ -6,13 +6,13 @@ to output the next hop address for each packet. Updates the TTL and
 checksum values for the packets and outputs those that are valid
 to an output file.
 
-Build instructions:
+## Build instructions:
 
 Use the included makefile with the default target.
 
-> make
+`$ make`
 
-Usage: ./ipforward <Forwarding table> <ip packets> <output file>
+Usage: `./ipforward <Forwarding table> <ip packets> <output file>`
 
 
 Everything seems to work pretty well according to the requirements.
